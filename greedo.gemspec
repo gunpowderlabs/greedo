@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Greedo::VERSION
   spec.authors       = ["Adam Pohorecki"]
   spec.email         = ["adam@pohorecki.pl"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{A very simple grid library}
+  spec.description   = %q{Shortens the syntax for creating tables}
+  spec.homepage      = "https://github.com/gunpowderlabs/greedo"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
