@@ -1,0 +1,17 @@
+- if grid.empty?
+  = grid.empty_message
+- else
+  %table.table.table-striped
+    %thead
+      %tr
+        - grid.headers.each do |header|
+          %th= header.label
+
+    %tbody
+      - grid.rows.each do |row|
+        %tr{id: row.id}
+          - row.columns.each do |column|
+            %td= column.value
+
+- if grid.show_pagination?
+  = will_paginate grid.paginator.records, param_name: param_name, renderer: BootstrapPagination::Rails
