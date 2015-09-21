@@ -1,13 +1,14 @@
 module Greedo
   module GridHelper
     class Grid
-      attr_reader :paginator, :view_context, :fields
+      attr_reader :paginator, :view_context, :fields, :presenter
 
-      def initialize(paginator, view_context)
+      def initialize(paginator:, view_context:)
         @paginator = paginator
         @view_context = view_context
         @row_id = ->(record) { default_row_id(record) }
         @fields = []
+        @presenter = proc{|r| r}
       end
 
       def configure
@@ -21,13 +22,23 @@ module Greedo
 
       def column(name, label: name.to_s.humanize, &block)
         if block
-          renderer = ->(record) { view_context.capture(record, &block) }
+          renderer = ->(record) { view_context.capture(present(record), &block) }
         else
-          renderer = ->(record) { record.public_send(name) }
+          renderer = ->(record) { present(record).public_send(name) }
         end
 
         fields << Field.new(name, label, renderer)
         nil
+      end
+
+      def presenter(klass = nil, &block)
+        block = proc{|r| klass.new(r)} if klass
+        @presenter = block
+        nil
+      end
+
+      def present(record)
+        @presenter.call(record)
       end
 
       def rows
@@ -88,7 +99,7 @@ module Greedo
                per_page: 20,
                &block)
       paginator = Paginator.build(scope, page: page, per_page: per_page)
-      grid = Grid.new(paginator, self)
+      grid = Grid.new(paginator: paginator, view_context: self)
       grid.configure(&block)
       render partial: "greedo/grid", locals: {grid: grid, param_name: param_name}
     end

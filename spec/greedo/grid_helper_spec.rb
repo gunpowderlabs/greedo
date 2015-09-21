@@ -116,6 +116,43 @@ RSpec.describe Greedo::GridHelper, type: :helper do
     expect(html).to include("No data to show.")
   end
 
+  class ProjectPresenter < SimpleDelegator
+    def author
+      "No Author"
+    end
+  end
+
+  it "wraps items in presenter" do
+    create_project(name: "foo")
+
+    html = helper.greedo(Project.all) do |g|
+      g.presenter ProjectPresenter
+      g.column :author
+    end
+
+    expect(html).to include("No Author")
+  end
+
+  it "wraps items in a block presenter" do
+    create_project(name: "foo")
+
+    html = helper.greedo(Project.all) do |g|
+      g.presenter do |record|
+        record.name
+      end
+
+      g.column :length
+    end
+
+    expect(html).to include("3")
+  end
+
+  it "does not pollute the output when printing the presenter output" do
+    helper.greedo(Project.all) do |g|
+      expect(g.presenter {|r| r.name}).to be_nil
+    end
+  end
+
   def create_project(attrs = {})
     Project.create!({
       name: "Project #{Project.count + 1}"
