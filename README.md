@@ -33,6 +33,29 @@ This will create a data table with two columns, one labelled "Name" and the othe
 It will show 10 users from the given scope (which should either be an ActiveRecord::Relation or an Array). 
 Pagination will be added if necessary.
 
+### Presenters
+
+You can wrap records in a class instance:
+
+```haml
+%h1 Table with class presenters
+
+= greedo(User.registered) do |g|
+  = g.presenter UserPresenter
+  = g.column :manager_name
+```
+
+or the same with a block:
+
+```haml
+%h1 Table with class presenters
+
+= greedo(User.registered) do |g|
+  - g.presenter do |record|
+    UserPresenter.new(record)
+  = g.column :manager_name
+```
+
 ## Limitations
 
 This is a very simple helper for now - there's no sorting, or even any way to easily customize the generated HTML. This will change in time, but for now I'm open-sourcing this mainly to share this useful bit of code between projects.
