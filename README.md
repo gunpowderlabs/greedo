@@ -30,8 +30,18 @@ After installing greedo, you can use the helper like this:
 ```
 
 This will create a data table with two columns, one labelled "Name" and the other "Actions".
-It will show 10 users from the given scope (which should either be an ActiveRecord::Relation or an Array). 
+It will show 10 users from the given scope (which should either be an ActiveRecord::Relation or an Array).
 Pagination will be added if necessary.
+
+### Custom empty message
+
+```haml
+%h1 My first table
+
+= greedo(User.registered, per_page: 10) do |g|
+  = g.empty_message "There are no users in the database."
+  = g.column :name
+```
 
 ### Presenters
 
