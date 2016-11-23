@@ -1,7 +1,7 @@
 module Greedo
   module GridHelper
     class Grid
-      attr_reader :paginator, :view_context, :fields, :presenter
+      attr_reader :paginator, :view_context, :fields, :presenter, :empty_message
 
       def initialize(paginator:, view_context:)
         @paginator = paginator
@@ -9,6 +9,7 @@ module Greedo
         @row_id = ->(record) { default_row_id(record) }
         @fields = []
         @presenter = proc{|r| r}
+        @empty_message = "No data to show."
       end
 
       def configure
@@ -60,7 +61,7 @@ module Greedo
       end
 
       def empty_message
-        view_context.content_tag(:p) { "No data to show." }
+        view_context.content_tag(:p) { empty_message }
       end
 
       private
