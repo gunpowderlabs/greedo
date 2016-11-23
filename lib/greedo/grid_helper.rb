@@ -80,7 +80,7 @@ module Greedo
         "#{snake_class}-#{record.id}"
       end
 
-      Column = Struct.new(:value)
+      Column = Struct.new(:value, :klass)
 
       Row = Struct.new(:record, :row_id, :fields) do
         def id
@@ -88,13 +88,17 @@ module Greedo
         end
 
         def columns
-          fields.map{ |f| Column.new(f.value(record)) }
+          fields.map{ |f| Column.new(f.value(record), f.klass) }
         end
       end
 
       Field = Struct.new(:name, :label, :renderer) do
         def value(record)
           renderer.call(record)
+        end
+
+        def klass
+          label.parameterize.underscore
         end
       end
     end
