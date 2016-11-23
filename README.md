@@ -39,7 +39,7 @@ Pagination will be added if necessary.
 %h1 My first table
 
 = greedo(User.registered, per_page: 10) do |g|
-  = g.empty_message "There are no users in the database."
+  = g.custom_empty_message "There are no users in the database."
   = g.column :name
 ```
 
