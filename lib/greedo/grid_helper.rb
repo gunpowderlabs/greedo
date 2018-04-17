@@ -29,14 +29,14 @@ module Greedo
         nil
       end
 
-      def column(name, label: name.to_s.humanize, &block)
+      def column(name, label: name.to_s.humanize, sort: false, &block)
         if block
           renderer = ->(record) { view_context.capture(present(record), &block) }
         else
           renderer = ->(record) { present(record).public_send(name) }
         end
 
-        fields << Field.new(name, label, renderer, order, order_by, view_context)
+        fields << Field.new(name, label, renderer, order, order_by, view_context, sort)
         nil
       end
 
@@ -95,7 +95,7 @@ module Greedo
         end
       end
 
-      Field = Struct.new(:name, :label, :renderer, :order, :order_by, :view_context) do
+      Field = Struct.new(:name, :label, :renderer, :order, :order_by, :view_context, :sort) do
         def value(record)
           renderer.call(record)
         end
@@ -145,7 +145,8 @@ module Greedo
                order: params[:order],
                order_by: params[:order_by],
                &block)
-      paginator = Paginator.build(scope, page: page, per_page: per_page)
+      paginator = Paginator.build(scope, page: page, per_page: per_page,
+                                 order: order, order_by: order_by)
       grid = Grid.new(paginator: paginator, view_context: self,
                       order: order, order_by: order_by)
       grid.configure(&block)
