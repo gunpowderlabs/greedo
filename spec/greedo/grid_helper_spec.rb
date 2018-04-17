@@ -13,12 +13,12 @@ RSpec.describe Greedo::GridHelper, type: :helper do
     create_project(name: "Foo")
 
     html = helper.greedo(Project.all) do |g|
-      g.column :id, label: "ID"
-      g.column :name
+      g.column :id, label: "ID", sort: false
+      g.column :name, sort: false
     end
 
-    expect(html).to include("<th>ID</th>")
-    expect(html).to include("<th>Name</th>")
+    expect(html).to include("ID")
+    expect(html).to include("Name")
   end
 
   it "renders values for each of the columns specified" do
@@ -26,8 +26,8 @@ RSpec.describe Greedo::GridHelper, type: :helper do
     bar = create_project(name: "Bar")
 
     html = helper.greedo(Project.all) do |g|
-      g.column :id, label: "ID"
-      g.column :name
+      g.column :id, label: "ID", sort: false
+      g.column :name, sort: false
     end
 
     expect(html).to include("Foo")
@@ -40,7 +40,7 @@ RSpec.describe Greedo::GridHelper, type: :helper do
     create_project(name: "Foo")
 
     html = helper.greedo(Project.all) do |g|
-      g.column :name do |p|
+      g.column "Name" do |p|
         p.name.upcase
       end
     end
@@ -86,8 +86,8 @@ RSpec.describe Greedo::GridHelper, type: :helper do
     bar = create_project(name: "Bar")
 
     html = helper.greedo(Project.all) do |g|
-      g.column :id
-      g.column :name
+      g.column :id, sort: false
+      g.column :name, sort: false
     end
 
     expect(html).to have_selector("tr#project-#{foo.id}")
@@ -100,8 +100,8 @@ RSpec.describe Greedo::GridHelper, type: :helper do
 
     html = helper.greedo(Project.all) do |g|
       g.row_id { |p| "asdf-#{p.id}" }
-      g.column :id
-      g.column :name
+      g.column :id, sort: false
+      g.column :name, sort: false
     end
 
     expect(html).to have_selector("tr#asdf-#{foo.id}")
@@ -127,7 +127,7 @@ RSpec.describe Greedo::GridHelper, type: :helper do
 
     html = helper.greedo(Project.all) do |g|
       g.presenter ProjectPresenter
-      g.column :author
+      g.column :author, sort: false
     end
 
     expect(html).to include("No Author")
@@ -141,7 +141,7 @@ RSpec.describe Greedo::GridHelper, type: :helper do
         record.name
       end
 
-      g.column :length
+      g.column :length, sort: false
     end
 
     expect(html).to include("3")
