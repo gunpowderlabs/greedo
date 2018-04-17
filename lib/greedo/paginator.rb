@@ -9,13 +9,13 @@ module Greedo
                    params: {},
                    page: params.fetch(:page) { 1 }.to_i,
                    per_page: params.fetch(:per_page) { 20 }.to_i,
-                   order: nil,
                    order_by: nil)
-      return ArrayPaginator.new(scope, order, order_by) if scope.is_a?(Array)
-      Paginator.new(scope, page: page, per_page: per_page, order: order, order_by: order_by)
+      return ArrayPaginator.new(scope, order_by.order, order_by.sort) if scope.is_a?(Array)
+      Paginator.new(scope, page: page, per_page: per_page,
+                    order: order_by.order, order_by: order_by.sort)
     end
 
-    def initialize(scope, page:, per_page:, order: "asc", order_by: nil)
+    def initialize(scope, page:, per_page:, order: nil, order_by: nil)
       @scope = scope
       @page = page
       @per_page = per_page
@@ -25,7 +25,8 @@ module Greedo
 
     def records
       paginated = scope.paginate(page: page, per_page: per_page)
-      order_by ? paginated.reorder(order_by => order) : paginated
+      order_by_fields = [order_by].flatten.map { |field| "#{field} #{order}" }.join(", ")
+      order_by ? paginated.reorder(order_by_fields) : paginated
     end
 
     def show?

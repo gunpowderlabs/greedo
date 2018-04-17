@@ -1,11 +1,11 @@
 module Greedo
   module GridHelper
     class Grid
-      attr_reader :paginator, :view_context, :fields, :presenter, :empty_message_text,
+      attr_accessor :paginator
+      attr_reader :view_context, :fields, :presenter, :empty_message_text,
         :order, :order_by
 
-      def initialize(paginator:, view_context:, order: nil, order_by: nil)
-        @paginator = paginator
+      def initialize(view_context:, order: nil, order_by: nil)
         @view_context = view_context
         @row_id = ->(record) { default_row_id(record) }
         @fields = []
@@ -24,12 +24,19 @@ module Greedo
         nil
       end
 
+      def ordered_by
+        fields.find(&:ordered_by?) || Field.new
+      end
+
       def row_id(&block)
         @row_id = block
         nil
       end
 
-      def column(name, label: name.to_s.humanize, sort: false, &block)
+      def column(name, label: name.to_s.humanize, sort: nil, &block)
+        if sort.blank? && name.is_a?(Symbol)
+          sort = name.to_s
+        end
         if block
           renderer = ->(record) { view_context.capture(present(record), &block) }
         else
@@ -104,8 +111,12 @@ module Greedo
           label.parameterize.underscore
         end
 
+        def ordered_by?
+          order_by == name.to_s && %w(asc desc).include?(order)
+        end
+
         def order_desc_path
-          if order_by == name.to_s && order == "desc"
+          if ordered_by? && order == "desc"
             view_context.url_for
           else
             view_context.url_for(order: :desc, order_by: name)
@@ -113,7 +124,7 @@ module Greedo
         end
 
         def order_asc_path
-          if order_by == name.to_s && order == "asc"
+          if ordered_by? && order == "asc"
             view_context.url_for
           else
             view_context.url_for(order: :asc, order_by: name)
@@ -121,7 +132,7 @@ module Greedo
         end
 
         def order_desc_class
-          if order_by == name.to_s && order == "desc"
+          if ordered_by? && order == "desc"
             "glyphicon-triangle-bottom"
           else
             "glyphicon-chevron-down"
@@ -129,7 +140,7 @@ module Greedo
         end
 
         def order_asc_class
-          if order_by == name.to_s && order == "asc"
+          if ordered_by? && order == "asc"
             "glyphicon-triangle-top"
           else
             "glyphicon-chevron-up"
@@ -145,11 +156,12 @@ module Greedo
                order: params[:order],
                order_by: params[:order_by],
                &block)
-      paginator = Paginator.build(scope, page: page, per_page: per_page,
-                                 order: order, order_by: order_by)
-      grid = Grid.new(paginator: paginator, view_context: self,
-                      order: order, order_by: order_by)
+      grid = Grid.new(view_context: self, order: order, order_by: order_by)
       grid.configure(&block)
+      grid.paginator = Paginator.build(scope,
+                                       page: page,
+                                       per_page: per_page,
+                                       order_by: grid.ordered_by)
       render partial: "greedo/grid", locals: {grid: grid, param_name: param_name}
     end
   end
