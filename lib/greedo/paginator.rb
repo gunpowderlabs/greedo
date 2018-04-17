@@ -12,17 +12,20 @@ module Greedo
                    order: nil,
                    order_by: nil)
       return ArrayPaginator.new(scope, order, order_by) if scope.is_a?(Array)
-      Paginator.new(scope, page: page, per_page: per_page)
+      Paginator.new(scope, page: page, per_page: per_page, order: order, order_by: order_by)
     end
 
-    def initialize(scope, page:, per_page:, order: nil, order_by: nil)
+    def initialize(scope, page:, per_page:, order: "asc", order_by: nil)
       @scope = scope
       @page = page
       @per_page = per_page
+      @order = order
+      @order_by = order_by
     end
 
     def records
-      scope.paginate(page: page, per_page: per_page)
+      paginated = scope.paginate(page: page, per_page: per_page)
+      order_by ? paginated.reorder(order_by => order) : paginated
     end
 
     def show?
