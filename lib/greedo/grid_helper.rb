@@ -34,7 +34,7 @@ module Greedo
       end
 
       def column(name, label: name.to_s.humanize, sort: nil, &block)
-        if sort.blank? && name.is_a?(Symbol)
+        if sort.nil? && name.is_a?(Symbol)
           sort = name.to_s
         end
         if block
@@ -117,17 +117,17 @@ module Greedo
 
         def order_desc_path
           if ordered_by? && order == "desc"
-            view_context.url_for
+            view_context.url_for(view_context.params)
           else
-            view_context.url_for(order: :desc, order_by: name)
+            view_context.url_for(view_context.params.merge(order: :desc, order_by: name))
           end
         end
 
         def order_asc_path
           if ordered_by? && order == "asc"
-            view_context.url_for
+            view_context.url_for(view_context.params)
           else
-            view_context.url_for(order: :asc, order_by: name)
+            view_context.url_for(view_context.params.merge(order: :asc, order_by: name))
           end
         end
 
