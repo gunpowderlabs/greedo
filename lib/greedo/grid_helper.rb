@@ -1,15 +1,18 @@
 module Greedo
   module GridHelper
     class Grid
-      attr_reader :paginator, :view_context, :fields, :presenter, :empty_message_text
+      attr_reader :paginator, :view_context, :fields, :presenter, :empty_message_text,
+        :order, :order_by
 
-      def initialize(paginator:, view_context:)
+      def initialize(paginator:, view_context:, order: nil, order_by: nil)
         @paginator = paginator
         @view_context = view_context
         @row_id = ->(record) { default_row_id(record) }
         @fields = []
         @presenter = proc{|r| r}
         @empty_message_text = "No data to show."
+        @order = order
+        @order_by = order_by
       end
 
       def configure
@@ -33,7 +36,7 @@ module Greedo
           renderer = ->(record) { present(record).public_send(name) }
         end
 
-        fields << Field.new(name, label, renderer)
+        fields << Field.new(name, label, renderer, order, order_by, view_context)
         nil
       end
 
@@ -92,13 +95,45 @@ module Greedo
         end
       end
 
-      Field = Struct.new(:name, :label, :renderer) do
+      Field = Struct.new(:name, :label, :renderer, :order, :order_by, :view_context) do
         def value(record)
           renderer.call(record)
         end
 
         def klass
           label.parameterize.underscore
+        end
+
+        def order_desc_path
+          if order_by == name.to_s && order == "desc"
+            view_context.url_for
+          else
+            view_context.url_for(order: :desc, order_by: name)
+          end
+        end
+
+        def order_asc_path
+          if order_by == name.to_s && order == "asc"
+            view_context.url_for
+          else
+            view_context.url_for(order: :asc, order_by: name)
+          end
+        end
+
+        def order_desc_class
+          if order_by == name.to_s && order == "desc"
+            "glyphicon-triangle-bottom"
+          else
+            "glyphicon-chevron-down"
+          end
+        end
+
+        def order_asc_class
+          if order_by == name.to_s && order == "asc"
+            "glyphicon-triangle-top"
+          else
+            "glyphicon-chevron-up"
+          end
         end
       end
     end
@@ -107,9 +142,12 @@ module Greedo
                param_name: :page,
                page: params.fetch(param_name) { 1 }.to_i,
                per_page: 20,
+               order: params[:order],
+               order_by: params[:order_by],
                &block)
       paginator = Paginator.build(scope, page: page, per_page: per_page)
-      grid = Grid.new(paginator: paginator, view_context: self)
+      grid = Grid.new(paginator: paginator, view_context: self,
+                      order: order, order_by: order_by)
       grid.configure(&block)
       render partial: "greedo/grid", locals: {grid: grid, param_name: param_name}
     end

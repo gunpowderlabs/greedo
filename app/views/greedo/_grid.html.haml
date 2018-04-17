@@ -6,7 +6,13 @@
       %tr
         - grid.headers.each do |header|
           %th{class: header.klass}
-            = header.label
+            .greedo-header
+              = header.label
+              .greedo-order
+                = link_to header.order_asc_path do
+                  %i.glyphicon{class: header.order_asc_class}
+                = link_to header.order_desc_path do
+                  %i.glyphicon{class: header.order_desc_class}
 
     %tbody
       - grid.rows.each do |row|
