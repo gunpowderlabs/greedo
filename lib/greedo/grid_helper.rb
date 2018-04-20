@@ -3,9 +3,9 @@ module Greedo
     class Grid
       attr_accessor :paginator
       attr_reader :view_context, :fields, :presenter, :empty_message_text,
-        :order, :order_by
+        :order, :order_by, :path_params
 
-      def initialize(view_context:, order: nil, order_by: nil)
+      def initialize(view_context:, order: nil, order_by: nil, path_params: nil)
         @view_context = view_context
         @row_id = ->(record) { default_row_id(record) }
         @fields = []
@@ -13,6 +13,7 @@ module Greedo
         @empty_message_text = "No data to show."
         @order = order
         @order_by = order_by
+        @path_params = path_params
       end
 
       def configure
@@ -43,7 +44,7 @@ module Greedo
           renderer = ->(record) { present(record).public_send(name) }
         end
 
-        fields << Field.new(name, label, renderer, order, order_by, view_context, sort)
+        fields << Field.new(name, label, renderer, order, order_by, view_context, sort, path_params)
         nil
       end
 
@@ -102,7 +103,8 @@ module Greedo
         end
       end
 
-      Field = Struct.new(:name, :label, :renderer, :order, :order_by, :view_context, :sort) do
+      Field = Struct.new(:name, :label, :renderer, :order, :order_by,
+                         :view_context, :sort, :path_params) do
         def value(record)
           renderer.call(record)
         end
@@ -115,19 +117,23 @@ module Greedo
           order_by == name.to_s && %w(asc desc).include?(order)
         end
 
+        def params
+          view_context.params.merge(path_params)
+        end
+
         def order_desc_path
           if ordered_by? && order == "desc"
-            view_context.url_for(view_context.params)
+            view_context.url_for(params.merge(order: nil, order_by: nil))
           else
-            view_context.url_for(view_context.params.merge(order: :desc, order_by: name))
+            view_context.url_for(params.merge(order: :desc, order_by: name))
           end
         end
 
         def order_asc_path
           if ordered_by? && order == "asc"
-            view_context.url_for(view_context.params)
+            view_context.url_for(params.merge(order: nil, order_by: nil))
           else
-            view_context.url_for(view_context.params.merge(order: :asc, order_by: name))
+            view_context.url_for(params.merge(order: :asc, order_by: name))
           end
         end
 
@@ -153,16 +159,22 @@ module Greedo
                param_name: :page,
                page: params.fetch(param_name) { 1 }.to_i,
                per_page: 20,
+               path_params: {},
                order: params[:order],
                order_by: params[:order_by],
                &block)
-      grid = Grid.new(view_context: self, order: order, order_by: order_by)
+      grid = Grid.new(view_context: self,
+                      order: order,
+                      order_by: order_by,
+                      path_params: path_params)
       grid.configure(&block)
       grid.paginator = Paginator.build(scope,
                                        page: page,
                                        per_page: per_page,
                                        order_by: grid.ordered_by)
-      render partial: "greedo/grid", locals: {grid: grid, param_name: param_name}
+      render partial: "greedo/grid", locals: {grid: grid,
+                                              param_name: param_name,
+                                              path_params: path_params}
     end
   end
 end

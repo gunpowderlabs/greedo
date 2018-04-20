@@ -23,4 +23,6 @@
               = column.value
 
 - if grid.show_pagination?
-  = will_paginate grid.paginator.records, param_name: param_name, renderer: BootstrapPagination::Rails
+  = will_paginate grid.paginator.records, param_name: param_name,
+                                          params: path_params,
+                                          renderer: BootstrapPagination::Rails
