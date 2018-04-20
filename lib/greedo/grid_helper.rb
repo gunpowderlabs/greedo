@@ -158,7 +158,7 @@ module Greedo
     def greedo(scope,
                param_name: :page,
                page: params.fetch(param_name) { 1 }.to_i,
-               per_page: 20,
+               per_page: params.fetch(:per_page) { 20 }.to_i,
                path_params: {},
                order: params[:order],
                order_by: params[:order_by],
