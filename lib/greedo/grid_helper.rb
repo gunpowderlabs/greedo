@@ -158,7 +158,7 @@ module Greedo
     def greedo(scope,
                param_name: :page,
                page: params.fetch(param_name) { 1 }.to_i,
-               per_page: params.fetch(:per_page) { 20 }.to_i,
+               per_page: nil,
                path_params: {},
                order: params[:order],
                order_by: params[:order_by],
@@ -170,7 +170,7 @@ module Greedo
       grid.configure(&block)
       grid.paginator = Paginator.build(scope,
                                        page: page,
-                                       per_page: per_page,
+                                       per_page: (params[:per_page] || per_page || 20).to_i,
                                        order_by: grid.ordered_by)
       render partial: "greedo/grid", locals: {grid: grid,
                                               param_name: param_name,
