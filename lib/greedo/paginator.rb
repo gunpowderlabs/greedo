@@ -29,7 +29,7 @@ module Greedo
     end
 
     def show?
-      scope.count > per_page
+      scope.length > per_page
     end
   end
 
